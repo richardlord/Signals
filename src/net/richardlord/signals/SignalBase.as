@@ -19,6 +19,7 @@ package net.richardlord.signals
 		private var toAddHead : ListenerNode;
 		private var toAddTail : ListenerNode;
 		private var dispatching : Boolean;
+		private var _numListeners : int = 0;
 
 		public function SignalBase()
 		{
@@ -51,6 +52,11 @@ package net.richardlord.signals
 				toAddTail = null;
 			}
 			listenerNodePool.releaseCache();
+		}
+		
+		public function get numListeners() : int
+		{
+			return _numListeners;
 		}
 
 		public function add( listener : Function ) : void
@@ -106,6 +112,7 @@ package net.richardlord.signals
 					tail = node;
 				}
 			}
+			_numListeners++;
 		}
 
 		public function remove( listener : Function ) : void
@@ -146,6 +153,7 @@ package net.richardlord.signals
 				{
 					listenerNodePool.dispose( node );
 				}
+				_numListeners--;
 			}
 		}
 		
@@ -153,14 +161,17 @@ package net.richardlord.signals
 		{
 			while( head )
 			{
-				var listener : ListenerNode = head;
+				var node : ListenerNode = head;
 				head = head.next;
-				listener.previous = null;
-				listener.next = null;
+				delete nodes[ node.listener ];
+				listenerNodePool.dispose( node );
+				node.previous = null;
+				node.next = null;
 			}
 			tail = null;
 			toAddHead = null;
 			toAddTail = null;
+			_numListeners = 0;
 		}
 	}
 }
